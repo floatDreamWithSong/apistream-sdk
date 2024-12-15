@@ -1,0 +1,33 @@
+{
+  "name": "apistream-sdk",
+  "private": false,
+  "author": "floatDreamer",
+  "publisher": "floatDreamer",
+  "homepage": "https://github.com/floatDreamWithSong",
+  "version": "0.0.4",
+  "type": "module",
+  "files": [
+    "bin",
+    "dist"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "apistream": "./bin/apistream.js",
+    "apistream-init": "./bin/apistream-init.js"
+  },
+  "scripts": {
+    "init": "apistream-init",
+    "dev": "apistream",
+    "build": "tsc "
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "axios": "^1.7.9",
+    "typescript": "~5.7.2"
+  },
+  "peerDependencies": {
+    "axios": "^1.7.9"
+  }
+}
