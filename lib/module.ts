@@ -35,7 +35,7 @@ export async function readModules(_dir: string) {
       modules.push(...subModules);
     } else 
     // 如果是js文件，读取模块
-    if (file.name.endsWith('.js')) {
+    if (file.name.endsWith('.js')||file.name.endsWith('.mjs')) {
       const module = (await readModule(filePath));
       if(Object.keys(module).length > 0 && typeof module === 'object' && module!== null)
       {

@@ -1,22 +1,29 @@
 import { URL } from 'node:url';
 
-interface ApiStreamConfig {
+export interface ApiStreamConfig {
     url: string,
     path: string,
-    output: string
+    output: string,
+    key: string,
+    projectName: string
 }
 
 const config: ApiStreamConfig = {
     url: '',
     path: '',
-    output: ''
+    output: '',
+    projectName: '',
+    key: ''
 }
+let isFirstTime = true
 export async function readConfig() {
-
+    if (isFirstTime)
         try {
+            isFirstTime = false
             // 使用动态导入来加载配置文件
-            const url = new URL('./apistream.config.js', 'file://'+process.cwd()+'/').toString();
+            const url = new URL('./apistream.config.js', 'file://' + process.cwd() + '/').toString();
             const configModule = await import(url);
+            console.log(configModule)
             // 检查导出是否为对象
             if (typeof configModule === 'object' && configModule !== null) {
                 Object.assign(config, configModule.default)
@@ -29,5 +36,9 @@ export async function readConfig() {
             console.error(error)
             throw Error('Error reading config file:');
         }
+    return config
 
+}
+export function defineAPIStreamConfig(config: ApiStreamConfig) {
+    return config;
 }

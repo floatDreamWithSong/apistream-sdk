@@ -1,11 +1,14 @@
 #!/usr/bin/env node
-// 在项目根目录生成apisream.config.js配置文件
 import { writeFileSync } from 'fs';
 writeFileSync('apistream.config.js', 
-`const config = {
-    url: 'http://localhost:8080',
-    path: 'apistream/src/',
-    output: 'src/apistream/'
-}
-export default config
+`
+import { defineAPIStreamConfig } from 'apistream-sdk'
+
+export default defineAPIStreamConfig({
+    projectName: 'myProject', // unique name for your project
+    key: '', // your key to access your apistream server side service
+    url: 'http://localhost:8080', // your apistream server side service url
+    path: 'apistream/src/', // your apistream clound modules' code path
+    output: 'src/apistream/' // path for the code that call your apistream clound modules
+})
 `);

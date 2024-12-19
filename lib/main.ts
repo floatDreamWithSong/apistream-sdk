@@ -1,13 +1,12 @@
 import { readModules } from "./module.js";
-import { readConfig } from "./config.js";
+import { ApiStreamConfig } from "./config.js";
 import { existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import axios from "axios";
 import { join } from "node:path";
 
 
-export const initApiStream = async () => {
-    // 读取配置
-    const config = await readConfig();
+export const initApiStream = async (config: ApiStreamConfig) => {
+
     // 读取模块
     const moduleList = await readModules(config.path);
     // 检查模块名是否重复
@@ -25,7 +24,7 @@ export const initApiStream = async () => {
             functions: [] as ServiceFunction[]
         }
         el.forEach(([name, value]) => {
-            if (name === 'var') {
+            if (name === 'const') {
                 // 环境变量
                 data.postCode += formatVariableCode(value)
             } else {
@@ -111,7 +110,11 @@ const rmDir = (dirPath) => {
 };
 const formatVariableCode = (variablesObj: object) => {
     const variableCode = Object.entries(variablesObj).map(([key, value]) => {
-        return typeof value === 'function' ? formatFunctionCode(value, key) : `var ${key} = ${JSON.stringify(value)};\n`;
+        if( value === null || value === undefined )
+            throw Error(`unexpected empty value ${value} of constant ${key}.`)
+        if(typeof value === 'object')
+            return `const ${key} = Object.freeze(${JSON.stringify(value)})`
+        return typeof value === 'function' ? formatFunctionCode(value, key) : `const ${key} = ${JSON.stringify(value)};\n`;
     }).join("");
     return variableCode;
 }

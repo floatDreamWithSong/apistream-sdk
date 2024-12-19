@@ -1,1 +1,1 @@
-export {initApiStream} from './main.js';
+export { defineAPIStreamConfig } from "./config.js";

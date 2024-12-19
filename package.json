@@ -4,7 +4,7 @@
   "author": "floatDreamer",
   "publisher": "floatDreamer",
   "homepage": "https://github.com/floatDreamWithSong",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "type": "module",
   "files": [
     "bin",
@@ -19,13 +19,14 @@
   },
   "scripts": {
     "init": "apistream-init",
-    "dev": "apistream",
+    "dev": "apistream && node index.js",
     "build": "tsc "
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
     "axios": "^1.7.9",
-    "typescript": "~5.7.2"
+    "typescript": "~5.7.2",
+    "vitest": "^2.1.8"
   },
   "peerDependencies": {
     "axios": "^1.7.9"
