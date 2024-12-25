@@ -1,5 +1,5 @@
 # APIStream SDK
-
+(! 警告：此项目是APIStream开发套件的SDK部分，后端套件还在开发中，请勿使用！)
 这是APISream(基于java的快速私有服务模块部署软件)的配套的js-SDK开发框架，可以帮助开发者快速部署自己的服务模块。
 
 ## 安装
@@ -19,12 +19,16 @@ npx apistream-init
 ## 自定义配置文件
 
 ``` js
-const config = {
-    url: 'http://localhost:8080', // APIStream软件部署的地址
-    path: 'apistream/src/', // 存放云函数的目录
-    output: 'src/apistream/' // 自动输出云函数调用的目录
-}
-export default config
+import { defineAPIStreamConfig } from 'apistream-sdk'
+
+export default defineAPIStreamConfig({
+    projectName: 'myProject', // unique name for your project
+    key: '', // your key to access your apistream server side service
+    url: 'http://localhost:8080', // your apistream server side service url
+    path: 'apistream/src/', // your apistream clound modules' code path
+    output: 'src/apistream/' // path for the code that call your apistream clound modules
+})
+
 ```
 
 ## 编写云函数
@@ -36,7 +40,7 @@ export default config
 ``` js
 // 编写云函数，或者云函数使用的工具函数、变量等
 export default {
-    var:{
+    const :{
         // 这里存放需要放在云端使用的变量，工具函数等只参与模块内的运算的变量
     },
     // 这里存放需要放在云端并部署的API云函数

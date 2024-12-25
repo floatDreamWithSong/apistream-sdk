@@ -23,7 +23,7 @@ export async function readConfig() {
             // 使用动态导入来加载配置文件
             const url = new URL('./apistream.config.js', 'file://' + process.cwd() + '/').toString();
             const configModule = await import(url);
-            console.log(configModule)
+            // console.log(configModule)
             // 检查导出是否为对象
             if (typeof configModule === 'object' && configModule !== null) {
                 Object.assign(config, configModule.default)

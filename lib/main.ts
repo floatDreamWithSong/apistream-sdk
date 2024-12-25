@@ -29,7 +29,7 @@ export const initApiStream = async (config: ApiStreamConfig) => {
                 data.postCode += formatVariableCode(value)
             } else {
                 data.postCode += formatFunctionCode(value, name)
-                data.localCode += 'export ' + replaceFunctionBodyWithAxiosPostWithArgs(value, name, extractArgs(value), joinUrl(config.url, mod + `::${name}`))
+                data.localCode += 'export ' + replaceFunctionBodyWithAxiosPostWithArgs(value, name, extractArgs(value), joinUrl(config.url,joinUrl( `/${config.projectName}`,  mod + `::${name}`)), config.key)
                 data.functions.push({
                     name: name,
                     code: formatFunctionCode(value, name),
@@ -47,7 +47,7 @@ export const initApiStream = async (config: ApiStreamConfig) => {
         const outputPath = join(config.output, `${plm.modPath}.js`);
         // console.log(outputPath);
         await axios.post(config.url.endsWith('/') ? config.url + 'APIStreamModuleServiceSDK' : config.url + '/APIStreamModuleServiceSDK', {
-            path: plm.modPath,
+            path: joinUrl( `/${config.projectName}`,plm.modPath),
             initCode: plm.postCode,
             MaxConcurrency: 1,
             functions: plm.functions.map(fu => ({
@@ -59,7 +59,7 @@ export const initApiStream = async (config: ApiStreamConfig) => {
             if (res.data.code === 0)
                 console.log(`module ${plm.modPath} deploy success`);
             else{
-                console.log(`module ${plm.modPath} deploy fail: ${res.data.msg}`);
+                console.error(`module ${plm.modPath} deploy fail: ${res.data.msg}`);
                 return;
             }
             // 生成本地代码
@@ -67,7 +67,9 @@ export const initApiStream = async (config: ApiStreamConfig) => {
                 mkdirSync(outputDir);
             writeFileSync(outputPath, plm.localCode)
             console.log(`module ${plm.modPath} generate success`);
-        }).catch(console.error);
+        }).catch(err=>{
+            console.error(`module ${plm.modPath} deploy fail: ${err.message}`);
+        });
     };
 };
 const extractArgs = (fn: Function) => {
@@ -86,9 +88,9 @@ const formatFunctionCode = (fn: Function, name: string, insertBodyCode = undefin
     const formattedCode = `function ${name}(${args.join(", ")}) {${insertBodyCode ? insertBodyCode : fnBody}};\n`;
     return formattedCode;
 }
-
-const replaceFunctionBodyWithAxiosPostWithArgs = (fn: Function, name: string, args: string[], url: string) => {
-    const axiosPostCode = `return axios.post("${url}", {${args.length > 0 ? args.map(arg => `${arg}: ${arg}`).join(",") : ""}})`;
+// axios({url: '',method: 'post',headers: {'Authorization': 'Basic YWRtaW46YWRtaW4='},data:{}})
+const replaceFunctionBodyWithAxiosPostWithArgs = (fn: Function, name: string, args: string[], url: string, token: string) => {
+    const axiosPostCode = `return axios({url:'${url}',method:'post',headers:{'Authorization':'${token}'},data:{${args.length > 0 ? args.map(arg => `${arg}: ${arg}`).join(",") : ""} }})`;
     return formatFunctionCode(fn, name, axiosPostCode);
 }
 const joinUrl = (url: string, path: string) => {
