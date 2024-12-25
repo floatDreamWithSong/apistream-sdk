@@ -29,7 +29,7 @@ export const initApiStream = async (config: ApiStreamConfig) => {
                 data.postCode += formatVariableCode(value)
             } else {
                 data.postCode += formatFunctionCode(value, name)
-                data.localCode += 'export ' + replaceFunctionBodyWithAxiosPostWithArgs(value, name, extractArgs(value), joinUrl(config.url,joinUrl( `/${config.projectName}`,  mod + `::${name}`)), config.key)
+                data.localCode += 'export ' + replaceFunctionBodyWithAxiosPostWithArgs(value, name, extractArgs(value), joinUrl(config.url, joinUrl(`/${config.projectName}`, mod + `::${name}`)), config.key)
                 data.functions.push({
                     name: name,
                     code: formatFunctionCode(value, name),
@@ -46,19 +46,24 @@ export const initApiStream = async (config: ApiStreamConfig) => {
         const outputDir = join(config.output, plm.modDir);
         const outputPath = join(config.output, `${plm.modPath}.js`);
         // console.log(outputPath);
-        await axios.post(config.url.endsWith('/') ? config.url + 'APIStreamModuleServiceSDK' : config.url + '/APIStreamModuleServiceSDK', {
-            path: joinUrl( `/${config.projectName}`,plm.modPath),
-            initCode: plm.postCode,
-            MaxConcurrency: 1,
-            functions: plm.functions.map(fu => ({
-                name: fu.name,
-                code: fu.code,
-                args: fu.args
-            }))
+        await axios({
+            url: config.url.endsWith('/') ? config.url + 'APIStreamModuleServiceSDK' : config.url + '/APIStreamModuleServiceSDK',
+            method: 'post',
+            headers:{'Authorization':config.key},
+            data: {
+                path: joinUrl(`/${config.projectName}`, plm.modPath),
+                initCode: plm.postCode,
+                MaxConcurrency: 1,
+                functions: plm.functions.map(fu => ({
+                    name: fu.name,
+                    code: fu.code,
+                    args: fu.args
+                }))
+            }
         }).then(res => {
             if (res.data.code === 0)
                 console.log(`module ${plm.modPath} deploy success`);
-            else{
+            else {
                 console.error(`module ${plm.modPath} deploy fail: ${res.data.msg}`);
                 return;
             }
@@ -67,7 +72,7 @@ export const initApiStream = async (config: ApiStreamConfig) => {
                 mkdirSync(outputDir);
             writeFileSync(outputPath, plm.localCode)
             console.log(`module ${plm.modPath} generate success`);
-        }).catch(err=>{
+        }).catch(err => {
             console.error(`module ${plm.modPath} deploy fail: ${err.message}`);
         });
     };
@@ -90,7 +95,8 @@ const formatFunctionCode = (fn: Function, name: string, insertBodyCode = undefin
 }
 // axios({url: '',method: 'post',headers: {'Authorization': 'Basic YWRtaW46YWRtaW4='},data:{}})
 const replaceFunctionBodyWithAxiosPostWithArgs = (fn: Function, name: string, args: string[], url: string, token: string) => {
-    const axiosPostCode = `return axios({url:'${url}',method:'post',headers:{'Authorization':'${token}'},data:{${args.length > 0 ? args.map(arg => `${arg}: ${arg}`).join(",") : ""} }})`;
+    token;
+    const axiosPostCode = `return axios({url:'${url}',method:'post',data:{${args.length > 0 ? args.map(arg => `${arg}: ${arg}`).join(",") : ""} }})`;
     return formatFunctionCode(fn, name, axiosPostCode);
 }
 const joinUrl = (url: string, path: string) => {
@@ -112,9 +118,9 @@ const rmDir = (dirPath) => {
 };
 const formatVariableCode = (variablesObj: object) => {
     const variableCode = Object.entries(variablesObj).map(([key, value]) => {
-        if( value === null || value === undefined )
+        if (value === null || value === undefined)
             throw Error(`unexpected empty value ${value} of constant ${key}.`)
-        if(typeof value === 'object')
+        if (typeof value === 'object')
             return `const ${key} = Object.freeze(${JSON.stringify(value)})`
         return typeof value === 'function' ? formatFunctionCode(value, key) : `const ${key} = ${JSON.stringify(value)};\n`;
     }).join("");

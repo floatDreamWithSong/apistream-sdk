@@ -4,7 +4,7 @@
   "author": "floatDreamer",
   "publisher": "floatDreamer",
   "homepage": "https://github.com/floatDreamWithSong",
-  "version": "0.0.9",
+  "version": "0.0.11",
   "type": "module",
   "files": [
     "bin",
@@ -15,20 +15,26 @@
   "types": "./dist/index.d.ts",
   "bin": {
     "apistream": "bin/apistream.js",
-    "apistream-init": "bin/apistream-init.js"
+    "apistream-init": "bin/apistream-init.js",
+    "apistream-ui": "bin/apistream-ui.js"
   },
   "scripts": {
     "init": "apistream-init",
     "dev": "apistream && node src/index.js",
-    "build": "tsc "
+    "build": "tsc ",
+    "ui": "apistream-ui"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
     "axios": "^1.7.9",
+    "express": "^4.21.2",
+    "open": "^10.1.0",
     "typescript": "~5.7.2",
     "vitest": "^2.1.8"
   },
   "peerDependencies": {
-    "axios": "^1.7.9"
+    "axios": "^1.7.9",
+    "express": "^4.21.2",
+    "open": "^10.1.0"
   }
 }
