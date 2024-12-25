@@ -14,8 +14,8 @@
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "apistream": "./bin/apistream.js",
-    "apistream-init": "./bin/apistream-init.js"
+    "apistream": "bin/apistream.js",
+    "apistream-init": "bin/apistream-init.js"
   },
   "scripts": {
     "init": "apistream-init",
