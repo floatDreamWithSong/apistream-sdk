@@ -1,6 +1,6 @@
 # APIStream SDK
 
-这是APISream(基于java的快速云端API函数部署软件)的配套的js-SDK开发框架，可以帮助开发者快速部署自己的云函数。
+这是APISream(基于java的快速私有服务模块部署软件)的配套的js-SDK开发框架，可以帮助开发者快速部署自己的服务模块。
 
 ## 安装
 
