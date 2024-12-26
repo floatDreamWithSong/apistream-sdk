@@ -4,9 +4,40 @@ import { existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import axios from "axios";
 import { join } from "node:path";
 
+export const deleteProject = async (config: ApiStreamConfig, projectName: string) => {
+    const res = await axios.delete(joinUrl(config.url,`/APIStreamProjectServiceSDK?project=${projectName}`),{
+        headers:{'Authorization':config.key}
+    })
+    if(res.data.code === 0){
+        console.log(`project ${config.projectName} delete success`);
+    }else{
+        console.error(`project ${config.projectName} delete fail: ${res.data.message}`);
+    }
+}
 
 export const initApiStream = async (config: ApiStreamConfig) => {
 
+    const res = await axios.get(joinUrl(config.url,`/APIStreamProjectServiceSDK?project=${config.projectName}`),{
+        headers:{'Authorization':config.key}
+    })
+    if(res.data.code === 0){
+        if(config.disableOverwrite)
+            throw new Error(`project ${config.projectName} already exist`);
+        else{
+            const res = await axios.post(joinUrl(config.url,`/APIStreamProjectServiceSDK?project=${config.projectName}`),{
+                headers:{'Authorization':config.key}
+            })
+            if(res.data.code === 0)
+                console.log(`project ${config.projectName} create success`);
+        }
+
+    }else{
+        const res = await axios.put(joinUrl(config.url,`/APIStreamProjectServiceSDK?project=${config.projectName}`),{
+            headers:{'Authorization':config.key}
+        })
+        if(res.data.code === 0)
+            console.log(`project ${config.projectName} create success`);
+    }
     // 读取模块
     const moduleList = await readModules(config.path);
     // 检查模块名是否重复
@@ -21,12 +52,18 @@ export const initApiStream = async (config: ApiStreamConfig) => {
             localCode: 'import axios from "axios";\n',
             modPath: mod,
             modDir: el[0][2],
-            functions: [] as ServiceFunction[]
+            functions: [] as ServiceFunction[],
+            options:{
+                MaxConcurrency:1
+            }
         }
         el.forEach(([name, value]) => {
             if (name === 'const') {
                 // 环境变量
                 data.postCode += formatVariableCode(value)
+            } else if(name === 'var') {
+                // 模块配置
+                data.options = Object.assign(data.options, value)
             } else {
                 data.postCode += formatFunctionCode(value, name)
                 data.localCode += 'export ' + replaceFunctionBodyWithAxiosPostWithArgs(value, name, extractArgs(value), joinUrl(config.url, joinUrl(`/${config.projectName}`, mod + `::${name}`)), config.key)
@@ -53,18 +90,18 @@ export const initApiStream = async (config: ApiStreamConfig) => {
             data: {
                 path: joinUrl(`/${config.projectName}`, plm.modPath),
                 initCode: plm.postCode,
-                MaxConcurrency: 1,
                 functions: plm.functions.map(fu => ({
                     name: fu.name,
                     code: fu.code,
                     args: fu.args
-                }))
+                })),
+                options: plm.options
             }
         }).then(res => {
             if (res.data.code === 0)
                 console.log(`module ${plm.modPath} deploy success`);
             else {
-                console.error(`module ${plm.modPath} deploy fail: ${res.data.msg}`);
+                console.error(`module ${plm.modPath} deploy fail: ${res.data.message}`);
                 return;
             }
             // 生成本地代码
@@ -73,7 +110,7 @@ export const initApiStream = async (config: ApiStreamConfig) => {
             writeFileSync(outputPath, plm.localCode)
             console.log(`module ${plm.modPath} generate success`);
         }).catch(err => {
-            console.error(`module ${plm.modPath} deploy fail: ${err.message}`);
+            console.error(`module ${plm.modPath} deploy fail: ${err}`);
         });
     };
 };

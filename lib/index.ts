@@ -1,1 +1,1 @@
-export { defineAPIStreamConfig } from "./config.js";
+export { defineAPIStreamConfig, defineModule } from "./config.js";

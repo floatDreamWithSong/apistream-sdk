@@ -5,7 +5,8 @@ export interface ApiStreamConfig {
     path: string,
     output: string,
     key: string,
-    projectName: string
+    projectName: string,
+    disableOverwrite: boolean,
 }
 
 const config: ApiStreamConfig = {
@@ -13,7 +14,8 @@ const config: ApiStreamConfig = {
     path: '',
     output: '',
     projectName: '',
-    key: ''
+    key: '',
+    disableOverwrite: true,
 }
 let isFirstTime = true
 export async function readConfig() {
@@ -41,4 +43,18 @@ export async function readConfig() {
 }
 export function defineAPIStreamConfig(config: ApiStreamConfig) {
     return config;
+}
+interface ModuleConfig {
+    var?: {
+        MaxConcurrency: number
+    },
+    const?: {
+        [key: string]: any
+    },
+    [key: string]: any
+}
+export const defineModule = (moduleConfig: ModuleConfig) =>{
+    if(moduleConfig.var===undefined)
+        moduleConfig.var = Object.assign({MaxConcurrency:1}, moduleConfig.var)
+    return moduleConfig;
 }

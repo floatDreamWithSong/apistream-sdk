@@ -4,7 +4,7 @@
   "author": "floatDreamer",
   "publisher": "floatDreamer",
   "homepage": "https://github.com/floatDreamWithSong",
-  "version": "0.0.11",
+  "version": "0.0.13",
   "type": "module",
   "files": [
     "bin",
@@ -20,7 +20,8 @@
   },
   "scripts": {
     "init": "apistream-init",
-    "dev": "apistream && node src/index.js",
+    "dev": "tsc -w",
+    "test": "apistream && node src/index.js",
     "build": "tsc ",
     "ui": "apistream-ui"
   },
