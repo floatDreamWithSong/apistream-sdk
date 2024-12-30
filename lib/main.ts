@@ -20,10 +20,12 @@ export const initApiStream = async (config: ApiStreamConfig) => {
     const res = await axios.get(joinUrl(config.url,`/APIStreamProjectServiceSDK?project=${config.projectName}`),{
         headers:{'Authorization':config.key}
     })
+    let startCreateProjectTime = Date.now();
     if(res.data.code === 0){
         if(config.disableOverwrite)
             throw new Error(`project ${config.projectName} already exist`);
         else{
+            await deleteProject(config, config.projectName);
             const res = await axios.post(joinUrl(config.url,`/APIStreamProjectServiceSDK?project=${config.projectName}`),{
                 headers:{'Authorization':config.key}
             })
@@ -38,12 +40,14 @@ export const initApiStream = async (config: ApiStreamConfig) => {
         if(res.data.code === 0)
             console.log(`project ${config.projectName} create success`);
     }
-    // 读取模块
+    console.log(`project ${config.projectName} create cost ${Date.now() - startCreateProjectTime}ms`);
     const moduleList = await readModules(config.path);
-    // 检查模块名是否重复
     const nameSet = new Set(moduleList.map(module => `${module[2]}/${module[3]}::${module[0]}`));
     if (nameSet.size !== moduleList.length)
         throw new Error("Duplicate module name found");
+    console.log(`module name check pass`);
+    console.log('compile modules...', )
+    let startCompileTime = Date.now();
     const groupedModuleLsit = Object.entries(Object.groupBy(moduleList, module => `${module[2] ? `/${module[2]}` : ''}/${module[3]}`))
     const plmList = groupedModuleLsit.map(([mod, el]) => {
         // 处理单个模块
@@ -64,7 +68,7 @@ export const initApiStream = async (config: ApiStreamConfig) => {
             } else if(name === 'var') {
                 // 模块配置
                 data.options = Object.assign(data.options, value)
-            } else {
+            } else if(typeof value === 'function') {
                 data.postCode += formatFunctionCode(value, name)
                 data.localCode += 'export ' + replaceFunctionBodyWithAxiosPostWithArgs(value, name, extractArgs(value), joinUrl(config.url, joinUrl(`/${config.projectName}`, mod + `::${name}`)), config.key)
                 data.functions.push({
@@ -72,17 +76,21 @@ export const initApiStream = async (config: ApiStreamConfig) => {
                     code: formatFunctionCode(value, name),
                     args: extractArgs(value).map(arg => ({ name: arg, value: undefined }))
                 })
+            } else {
+                throw new Error(`Unexpected value type ${typeof value} of ${name} at ${mod}`);
             }
         });
         return data
     });
+    console.log(`compile modules success, cost ${Date.now() - startCompileTime}ms`);
     // 清空输出目录
     rmDir(config.output);
+    console.log(`output dir ${config.output} clear success`);
     // 部署模块
     for (let plm of plmList) {
         const outputDir = join(config.output, plm.modDir);
         const outputPath = join(config.output, `${plm.modPath}.js`);
-        // console.log(outputPath);
+        let startDeployTime = Date.now();
         await axios({
             url: config.url.endsWith('/') ? config.url + 'APIStreamModuleServiceSDK' : config.url + '/APIStreamModuleServiceSDK',
             method: 'post',
@@ -108,7 +116,7 @@ export const initApiStream = async (config: ApiStreamConfig) => {
             if (!existsSync(outputDir))
                 mkdirSync(outputDir);
             writeFileSync(outputPath, plm.localCode)
-            console.log(`module ${plm.modPath} generate success`);
+            console.log(`module ${plm.modPath} generate success, cost ${Date.now() - startDeployTime}ms`);
         }).catch(err => {
             console.error(`module ${plm.modPath} deploy fail: ${err}`);
         });
@@ -130,7 +138,6 @@ const formatFunctionCode = (fn: Function, name: string, insertBodyCode = undefin
     const formattedCode = `function ${name}(${args.join(", ")}) {${insertBodyCode ? insertBodyCode : fnBody}};\n`;
     return formattedCode;
 }
-// axios({url: '',method: 'post',headers: {'Authorization': 'Basic YWRtaW46YWRtaW4='},data:{}})
 const replaceFunctionBodyWithAxiosPostWithArgs = (fn: Function, name: string, args: string[], url: string, token: string) => {
     token;
     const axiosPostCode = `return axios({url:'${url}',method:'post',data:{${args.length > 0 ? args.map(arg => `${arg}: ${arg}`).join(",") : ""} }})`;
