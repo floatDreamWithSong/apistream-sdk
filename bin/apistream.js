@@ -6,7 +6,7 @@ import { join } from 'path';
 import { fileURLToPath } from 'url';
 import open from 'open';
 import { writeFileSync } from 'fs';
-console.log('apistream-sdk. version 0.0.16')
+console.log('apistream-sdk. version 0.0.18')
 // 解析命令行参数
 const args = process.argv.slice(2);
 let command = args[0];
@@ -19,7 +19,6 @@ if (command === '-i' || command === '--init') {
     // apistream-init.js 的逻辑
     writeFileSync('apistream.config.js', 
     `import { defineAPIStreamConfig } from 'apistream-sdk'
-import { deleteProject } from './../lib/main';
 
 export default defineAPIStreamConfig({
     projectName: 'myProject', // unique name for your project
