@@ -2,8 +2,6 @@ import { readdir } from "node:fs/promises";
 import { readConfig } from "./config.js";
 import { join } from "path";
 
-const config = await readConfig()
-
 export async function readModule(_path: string) {
     // 构建配置文件的完整路径
     try {
@@ -24,6 +22,7 @@ export async function readModule(_path: string) {
     }
 }
 export async function readModules(_dir: string) {
+  const config = await readConfig()
   const modules = []
   // 遍历目录及其子目录
   const files = await readdir(_dir, { withFileTypes: true });
