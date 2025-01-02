@@ -1,5 +1,7 @@
 # APIStream SDK
 
+[English](README.en.md)
+
 这是APISream(基于java的快速私有服务模块部署软件)的配套的js-SDK开发框架，可以帮助开发者快速部署自己的服务模块。
 
 ## 安装
@@ -19,6 +21,8 @@ npx apistream --help
 #    -h  --help                  显示帮助信息
 #    -r  --remove <project>      删除云端项目
 ```
+
+> 若需要多次使用，推荐 使用 `npm exec apistream -h`,`pnpm apistream -h`,或者添加命令到package.json使用, 此文仅用npx用作示例
 
 ## 创建配置文件
 
@@ -70,6 +74,41 @@ export default {
 }
 ```
 
+如果你只需要导出多个个API函数而不需要其他的变量或配置，你也可以这样导出
+
+``` js
+export const a = () => {
+
+}
+
+export function b (){
+
+}
+
+```
+
+### 使用SQL
+
+我们为您提供了灵活简单的SQL系统调用，示例如下
+
+``` js
+
+import { DataBase } from 'apistream-sdk';
+export const testfn=()=>{
+    console.log(DataBase.selectList('select * from user where id=1'))
+}
+```
+
+返回示例：
+
+``` js
+{
+  consoleOutput: '{"sql":"select * from user where id\\u003d1","result":[{"name":"小李","id":1,"age":18,"email":"admin1@baomidou.com"}]}\n' +
+    '1\n',
+  result: 'test name'
+}
+```
+
 ## 部署云模块
 
 在项目根目录执行以下命令，云函数会自动部署到APIStream软件中，并为您生成对应的调用函数到`output`目录。
@@ -84,9 +123,9 @@ npx apistream -d
 
 相比传统开发模式，我们APIStream自动部署套件可为您节省：
 
-- 部署时间
+- 需要多次快速部署的时间
 - 网络请求编写与管理
-- 服务日志管理
+- 自动服务日志
 - 序列化/反序列化
 - 后端脚手架搭建
 - 云端接受参数处理

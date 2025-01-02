@@ -6,7 +6,7 @@ import { join } from 'path';
 import { fileURLToPath } from 'url';
 import open from 'open';
 import { writeFileSync } from 'fs';
-console.log('apistream-sdk. version 0.0.14')
+console.log('apistream-sdk. version 0.0.16')
 // 解析命令行参数
 const args = process.argv.slice(2);
 let command = args[0];

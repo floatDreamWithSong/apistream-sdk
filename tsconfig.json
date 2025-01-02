@@ -9,6 +9,7 @@
     "moduleResolution": "bundler",
     // "allowImportingTsExtensions": true,
     "declaration": true,
+    "declarationDir": "dist/types",
     "isolatedModules": true,
     "moduleDetection": "force",
     "outDir": "dist",
