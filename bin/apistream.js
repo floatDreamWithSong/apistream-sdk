@@ -6,7 +6,9 @@ import { join } from 'path';
 import { fileURLToPath } from 'url';
 import open from 'open';
 import { writeFileSync } from 'fs';
-console.log('apistream-sdk. version 0.0.18')
+import { exec } from "child_process";
+console.log('apistream-sdk. version 1.0.0')
+const port = 5375;
 const args = process.argv.slice(2);
 let command = args[0];
 if (!command) {
@@ -15,7 +17,6 @@ if (!command) {
 command = command.toLowerCase();
 
 if (command === '-i' || command === '--init') {
-    // apistream-init.js 的逻辑
     writeFileSync('apistream.config.js', 
     `import { defineAPIStreamConfig } from 'apistream-sdk'
 
@@ -36,20 +37,35 @@ export default defineAPIStreamConfig({
 })
     `);
 } else if (command === '-d' || command === '--deploy') {
-    // apistream.js 的逻辑
     await initApiStream(await readConfig());
 } else if (command === '-u' || command === '--ui') {
-    // apistream-ui.js 的逻辑
     const config = await readConfig();
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = join(__filename, '..');
     const app = express();
-    const port = 5174;
     app.use(expressStatic(join(__dirname, '../dist/ui')));
+    app.use(express.json())
     app.get('/', (req, res) => {
         res.sendFile(join(__dirname, '../dist/ui/index.html'));
     });
+    app.post('/', (req,res)=>{
+        const { module_path } = req.body;
 
+        if (!module_path) {
+            return res.status(400).send('module_path is required');
+        }
+        const _path = join(process.cwd(), config.path ,module_path+'.js')
+        exec(`code ${_path}`, (error, stdout, stderr) => {
+            if (error) {
+                console.error(`Error opening file: ${error.message}`);
+                return res.status(500).send('Error opening file'+_path);
+            }
+            if (stderr) {
+                return res.status(500).send('Error opening file'+_path);
+            }
+            res.send('File opened successfully');
+        });
+    })
     app.listen(port, () => {
         const url = `http://localhost:${port}?key=${config.key}`;
         console.log(`Server running at http://localhost:${port}`);
