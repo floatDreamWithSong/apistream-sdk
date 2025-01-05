@@ -7,7 +7,7 @@ import { fileURLToPath } from 'url';
 import open from 'open';
 import { writeFileSync } from 'fs';
 import { exec } from "child_process";
-console.log('apistream-sdk. version 1.0.0')
+console.log('apistream-sdk. version 1.0.1')
 const port = 5375;
 const args = process.argv.slice(2);
 let command = args[0];
@@ -67,7 +67,7 @@ export default defineAPIStreamConfig({
         });
     })
     app.listen(port, () => {
-        const url = `http://localhost:${port}?key=${config.key}`;
+        const url = `http://localhost:${port}?key=${config.key}&url=${config.url}`;
         console.log(`Server running at http://localhost:${port}`);
         open(url);
     });
